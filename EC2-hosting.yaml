@@ -1,0 +1,47 @@
+---
+Resources:
+  WebPortfolioSecurityGroup1:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access on ports 80 and 22
+      GroupName: WebsitePortfolio11
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 41.145.193.123/32
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 41.145.193.123/32
+      Tags:
+        - Key: Name
+          Value: WebPortfolioSG1
+      VpcId: vpc-0242b335afa7aefc9
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      SubnetId: subnet-0600cd18ba614590a
+      SecurityGroupIds:
+        - ! Ref: WebPortfolioSecurityGroup1
+      KeyName: MyPemFile
+      ImageId: ami-04ff98ccbfa41c9ad
+      Tags:
+        - Key: Name
+          Value: Web-PortfolioSG1
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            sudo su
+            yum update -y
+            yum install -y httpd
+            cd /var/www/html
+            wget https://github.com/Ashleymonamo/portfolio-website/archive/refs/heads/main.zip
+            unzip main.zip
+            cp -r portfolio-website-main/* /var/www/html/
+            rm -rf portfolio-website-main main.zip
+            systemctl enable httpd 
+            systemctl start httpd
